@@ -179,8 +179,7 @@ class View
     private function setViewFileBuffer($fileName)
     {
         $buffer = $this->dealExtends($fileName);
-        $buffer = $this->dealYield($buffer);
-        $buffer = $this->dealInclude($buffer);
+
         while(1) {
             preg_match("/(@yield|@include|@section)/", $buffer, $matches);
             if (! empty($matches)) {
