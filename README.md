@@ -26,3 +26,6 @@
     //在模板中使用
     @time($value)
     
+#### 添加模板后缀名
+    $view->addViewFileSuffix('.tpl'); //默认支持.html .php
+    
