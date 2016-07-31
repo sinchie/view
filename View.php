@@ -182,15 +182,15 @@ class View
         $buffer = $this->dealYield($buffer);
         $buffer = $this->dealInclude($buffer);
         while(1) {
-            preg_match("/(@yield|@include)/", $buffer, $matches);
+            preg_match("/(@yield|@include|@section)/", $buffer, $matches);
             if (! empty($matches)) {
                 $buffer = $this->dealYield($buffer);
                 $buffer = $this->dealInclude($buffer);
+                $buffer = $this->dealSection($buffer);
             } else {
                 break;
             }
         }
-        $buffer = $this->dealSection($buffer);
 
         $this->viewFileBuffer = $buffer;
     }
@@ -202,8 +202,13 @@ class View
      */
     private function dealSection($buffer)
     {
-        $result = preg_replace_callback("/@section\(('|\")(.*?)('|\")\)([\s\S]*)@stop/", function($matches) {
-            return $this->sections[$matches[2]];
+        $result = preg_replace_callback("/@section\(['|\"](.*?)['|\"]\)([\s\S]*?)@stop/", function($matches) {
+            if (!isset($this->sections[$matches[1]])) {
+                $this->sections[$matches[1]] = $matches[2];
+                return $matches[0];
+            } else {
+                return $this->sections[$matches[1]];
+            }
         }, $buffer);
 
         return $result;
