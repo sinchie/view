@@ -56,7 +56,7 @@ class View
     private $replaces = [
         "/{{\s*(.*?)\s*}}/" => '<?php echo $this->e(${1}); ?>',
         "/{!!\s*(.*?)\s*!!}/" => '<?php echo ${1}; ?>',
-        "/{{--\s*(.*?)\s*--}}/" => '',
+        "/{{--\s*(.*?)\s*--}}/" => '<?php /* ${1} */ ?>',
         "/@if\((.*?)\)/" => '<?php if(${1}): ?>',
         "/@elseif\((.*?)\)/" => '<?php elseif(${1}): ?>',
         "/@else/" => '<?php else: ?>',
@@ -161,6 +161,9 @@ class View
     private function isExpireOut()
     {
         if (is_file($this->compileFilePath)) {
+            if ($this->cacheExpire == 0) {
+                return true;
+            }
             $createTime = filectime($this->compileFilePath);
             if (($createTime + $this->cacheExpire) < time()) {
                 return true;
@@ -178,11 +181,12 @@ class View
      */
     private function setViewFileBuffer($fileName)
     {
-        $buffer = $this->dealExtends($fileName);
+        $buffer = file_get_contents($this->getViewFileRealPath($fileName));
 
         while(1) {
-            preg_match("/(@yield|@include|@section)/", $buffer, $matches);
+            preg_match("/(@yield|@include|@section|@extends)/", $buffer, $matches);
             if (! empty($matches)) {
+                $buffer = $this->dealExtends($buffer);
                 $buffer = $this->dealYield($buffer);
                 $buffer = $this->dealInclude($buffer);
                 $buffer = $this->dealSection($buffer);
@@ -232,13 +236,11 @@ class View
 
     /**
      * 处理继承关系
-     * @param $fileName
+     * @param $buffer
      * @return string
      */
-    private function dealExtends($fileName)
+    private function dealExtends($buffer)
     {
-        $buffer = file_get_contents($this->getViewFileRealPath($fileName));
-
         //匹配section
         preg_match_all("/@section\(['|\"](.*?)['|\"]\)([\s\S]*?)@stop/", $buffer, $matchSection);
         if (!empty($matchSection[0])) {
@@ -252,7 +254,8 @@ class View
         //继承匹配
         preg_match("/@extends\(('|\")(.*?)('|\")\)/", $buffer, $matchExtends);
         if (!empty($matchExtends)) {
-            return $this->dealExtends($matchExtends[2]);
+            $bufferTemp = file_get_contents($this->getViewFileRealPath($matchExtends[2]));
+            return $this->dealExtends($bufferTemp);
         }
 
         return $buffer;
