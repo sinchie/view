@@ -118,10 +118,13 @@ class View
 
         require $this->compileFilePath;
 
-        if ($this->compileCount == 1) {
+        $this->compileCount--;
+
+        if ($this->compileCount == 0) {
             $result = ob_get_clean();
         }
-        return isset($result) ? $result : '';
+
+        return isset($result) ? trim($result) : '';
     }
 
     /**
@@ -207,14 +210,11 @@ class View
     {
         $pattern = "/@section\(['|\"](.+?)['|\"]\)([\s\S]+?)@(stop|show)/";
         $buffer = preg_replace_callback($pattern, function($matches){
-            $str = PHP_EOL . '<?php $this->startSection("'. $matches[1] .'");?>'
-                . PHP_EOL
-                . $matches[2]
-                . PHP_EOL;
+            $str =  '<?php $this->startSection("'. $matches[1] .'");?>' . $matches[2];
             if ($matches[3] == 'show') {
-                $str .= '<?php $this->stopSection(true); ?>' . PHP_EOL;
+                $str .= '<?php $this->stopSection(true); ?>';
             } else {
-                $str .= '<?php $this->stopSection(); ?>' . PHP_EOL;
+                $str .= '<?php $this->stopSection(); ?>';
             }
             return $str;
         }, $buffer);
@@ -236,9 +236,14 @@ class View
     /**
      * 结束section
      * @param bool $show
+     * @throws Exception
      */
     protected function stopSection($show = false)
     {
+        if (empty($this->sectionStack)) {
+            throw new Exception("Bad stopSection");
+        }
+
         $buffer = ob_get_clean();
 
         $last = array_pop($this->sectionStack);
@@ -281,7 +286,7 @@ class View
     protected function compileEcho($buffer)
     {
         $buffer = preg_replace(array_keys($this->rules), array_values($this->rules), $buffer);
-        return $buffer;
+        return trim($buffer);
     }
 
     /**
