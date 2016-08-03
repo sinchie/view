@@ -60,15 +60,19 @@ class View
      * @var array
      */
     protected $rules = [
-        "/{{\s*(.*?)\s*}}/" => '<?php echo $this->e(${1}); ?>',
-        "/{!!\s*(.*?)\s*!!}/" => '<?php echo ${1}; ?>',
-        "/{{--\s*(.*?)\s*--}}/" => '<?php /* ${1} */ ?>',
-        "/@if\((.*?)\)/" => '<?php if(${1}): ?>',
-        "/@elseif\((.*?)\)/" => '<?php elseif(${1}): ?>',
+        "/{{\s*(.+?)\s*}}/" => '<?php echo $this->e(${1}); ?>',
+        "/{!!\s*(.+?)\s*!!}/" => '<?php echo ${1}; ?>',
+        "/{{--\s*(.+?)\s*--}}/" => '<?php /* ${1} */ ?>',
+        "/@if\((.+?)\)/" => '<?php if(${1}): ?>',
+        "/@elseif\((.+?)\)/" => '<?php elseif(${1}): ?>',
         "/@else/" => '<?php else: ?>',
         "/@endif/" => '<?php endif; ?>',
-        "/@foreach\((.*?)\)/" => '<?php foreach(${1}): ?>',
+        "/@foreach\((.+?)\)/" => '<?php foreach(${1}): ?>',
         "/@endforeach/" => '<?php endforeach; ?>',
+        "/@while\((.+?)\)/" => '<?php while(${1}): ?>',
+        "/@endwhile/" => '<?php endwhile; ?>',
+        "/@for\((.+?)\)/" => '<?php for(${1}): ?>',
+        "/@endfor/" => '<?php endfor; ?>',
     ];
 
     /**
