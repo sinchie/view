@@ -42,6 +42,20 @@
         我是覆盖内容
     @stop
     //如果子模板中不设置覆盖内容section区块，那么将直接使用默认内容。
+    
+#### 输出变量
+    {{ $var }} //默认进行安全转译
+    {!! $var !!} //不进行安全转译
+    {{-- $var --}} //模板注释
+    
+#### 常用标签
+    @if(condition) @else @elseif(condition) @endif
+    
+    @foreach($data as $k => $v) @endforeach
+    
+    @while(condition) @endwhile
+    
+    @for(something) @endfor
   
 #### 编译缓存
 
